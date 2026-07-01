@@ -636,7 +636,14 @@ let pokemonSlots = [];
 const POKEMON_JSON_URL = "https://tofumental555.github.io/ingredient-simulator/pokemon_data.json";
 
 async function loadDB() {
-  try { pokemonDB = await (await fetch(POKEMON_JSON_URL)).json(); }
+  try {
+    pokemonDB = await (await fetch(POKEMON_JSON_URL)).json();
+    // maxInventoryが含まれているか確認
+    const hasMaxInv = pokemonDB.length > 0 && pokemonDB[0].maxInventory !== undefined;
+    if (!hasMaxInv) {
+      console.warn("⚠️ pokemon_data.jsonにmaxInventoryが含まれていません。GitHubに最新のpokemon_data.jsonをアップロードしてください。");
+    }
+  }
   catch(e) { console.warn("pokemon_data.json読み込みエラー:", e); pokemonDB = []; }
   initEvents();
 }
@@ -1141,6 +1148,8 @@ function calcWeekly(entry, teamOtebonus = 0) {
   // 食材獲得量の補正係数（あふれなし=1.0）
   let effectiveFoodMultiplier = 1.0;
 
+  // デバッグ: maxInventoryの確認
+  // console.log(pokemon.name, 'maxInventory:', pokemon.maxInventory, 'sleepTap:', sleepTap);
   if (!sleepTap && maxInventory != null && maxInventory > 0 && avgPerHelp > 0) {
     // 起床中（15.5h）: 毎分タップ → あふれなし
     const awakeHelps = AWAKE_SECONDS / interval;
