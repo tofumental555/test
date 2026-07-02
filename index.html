@@ -1149,7 +1149,7 @@ function calcWeekly(entry, teamOtebonus = 0) {
   let effectiveFoodMultiplier = 1.0;
 
   // デバッグ: maxInventoryの確認
-  // console.log(pokemon.name, 'maxInventory:', pokemon.maxInventory, 'sleepTap:', sleepTap);
+  console.log("[overflow]", pokemon.name, "maxInv:", pokemon.maxInventory, "sleepTap:", sleepTap, "avgPerHelp:", avgPerHelp?.toFixed(3), "eff:", effectiveFoodMultiplier?.toFixed(3));
   if (!sleepTap && maxInventory != null && maxInventory > 0 && avgPerHelp > 0) {
     // 起床中（15.5h）: 毎分タップ → あふれなし
     const awakeHelps = AWAKE_SECONDS / interval;
