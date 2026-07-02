@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ツールガイド｜チーム食材シミュレーター｜ポケモンスリープ攻略</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Nunito:wght@600;700;800&display=swap');
+
+    :root {
+      --night-deep: #161029;
+      --night-panel: #251c47;
+      --night-panel-2: #2f2459;
+      --purple: #a98ee8;
+      --purple-soft: #7d68b8;
+      --star: #ffd166;
+      --star-soft: #ffe9b0;
+      --text: #ece6fa;
+      --text-dim: #9b8fc2;
+      --green: #7fd9a8;
+      --red: #ff7e7e;
+      --border: rgba(169,142,232,0.25);
+      --accent: #c4a8ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', 'Zen Maru Gothic', sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse 700px 350px at 10% 0%, rgba(169,142,232,0.2), transparent 60%),
+        radial-gradient(ellipse 500px 400px at 95% 15%, rgba(255,209,102,0.09), transparent 55%),
+        linear-gradient(180deg, var(--night-deep) 0%, #1d1638 100%);
+      min-height: 100vh;
+      padding: 0 0 80px;
+    }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(2px 2px at 8% 12%, rgba(255,209,102,0.8), transparent),
+        radial-gradient(1.5px 1.5px at 75% 8%, rgba(255,209,102,0.5), transparent),
+        radial-gradient(2px 2px at 55% 25%, rgba(236,230,250,0.5), transparent),
+        radial-gradient(1.5px 1.5px at 25% 55%, rgba(169,142,232,0.6), transparent),
+        radial-gradient(2px 2px at 88% 65%, rgba(255,209,102,0.4), transparent),
+        radial-gradient(1.5px 1.5px at 40% 80%, rgba(236,230,250,0.4), transparent),
+        radial-gradient(2px 2px at 15% 90%, rgba(169,142,232,0.3), transparent);
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative; z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* ── ヘッダー ── */
+    .site-header {
+      text-align: center;
+      padding: 48px 16px 36px;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 800; letter-spacing: 0.14em;
+      color: var(--star); margin-bottom: 16px;
+    }
+    .eyebrow::before, .eyebrow::after { content: "✦"; font-size: 12px; }
+
+    h1 {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: clamp(24px, 6vw, 36px);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+    h1 span { color: var(--star); }
+
+    .hero-sub {
+      font-size: 13.5px;
+      color: var(--text-dim);
+      line-height: 1.75;
+      max-width: 480px;
+      margin: 0 auto 28px;
+    }
+
+    /* ── ナビボタン ── */
+    .nav-btn-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .nav-btn {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 14px; font-weight: 900;
+      letter-spacing: 0.03em;
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: none; cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .nav-btn:active { transform: scale(0.97); }
+    .nav-btn-primary {
+      background: linear-gradient(135deg, var(--star) 0%, #ffb84d 100%);
+      color: #2a1f4d;
+    }
+    .nav-btn-secondary {
+      background: rgba(169,142,232,0.15);
+      color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+
+    /* ── セクション ── */
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .section-num {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 11px; font-weight: 900;
+      color: var(--night-deep);
+      background: var(--star);
+      border-radius: 8px;
+      padding: 3px 10px;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+    .section-title {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: clamp(17px, 4vw, 22px);
+      font-weight: 900;
+      color: var(--star-soft);
+      line-height: 1.3;
+    }
+
+    /* ── パネル ── */
+    .panel {
+      background: linear-gradient(160deg, var(--night-panel) 0%, var(--night-panel-2) 100%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .panel p {
+      font-size: 13.5px;
+      color: var(--text-dim);
+      line-height: 1.85;
+    }
+    .panel p + p { margin-top: 10px; }
+
+    /* スクリーンショット */
+    .screenshot-wrap {
+      margin: 16px 0;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(169,142,232,0.2);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .screenshot-wrap img {
+      width: 100%;
+      display: block;
+    }
+    .screenshot-caption {
+      background: rgba(22,16,41,0.7);
+      font-size: 11.5px;
+      color: var(--text-dim);
+      padding: 8px 14px;
+      text-align: center;
+    }
+
+    /* ハイライトボックス */
+    .highlight-box {
+      background: rgba(169,142,232,0.08);
+      border: 1px solid rgba(169,142,232,0.28);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    .highlight-box .hl-title {
+      font-size: 12px; font-weight: 800;
+      color: var(--purple);
+      margin-bottom: 8px;
+      letter-spacing: 0.04em;
+    }
+    .highlight-box ul {
+      list-style: none;
+      padding: 0;
+    }
+    .highlight-box ul li {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.8;
+      padding-left: 16px;
+      position: relative;
+    }
+    .highlight-box ul li::before {
+      content: "→";
+      position: absolute; left: 0;
+      color: var(--star);
+      font-size: 11px;
+      top: 3px;
+    }
+
+    /* 緑ハイライト */
+    .highlight-box.green {
+      background: rgba(127,217,168,0.07);
+      border-color: rgba(127,217,168,0.3);
+    }
+    .highlight-box.green .hl-title { color: var(--green); }
+
+    /* 例示ボックス */
+    .example-box {
+      background: rgba(255,209,102,0.06);
+      border: 1px solid rgba(255,209,102,0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    .example-box .ex-label {
+      font-size: 10.5px; font-weight: 800;
+      color: var(--star);
+      letter-spacing: 0.08em;
+      margin-bottom: 7px;
+    }
+    .example-box p {
+      font-size: 13px !important;
+      color: var(--text-dim) !important;
+      line-height: 1.8 !important;
+    }
+
+    /* ステップ */
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .step-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .step-badge {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 12px; font-weight: 900;
+      background: var(--night-panel-2);
+      border: 1.5px solid var(--border);
+      color: var(--accent);
+      border-radius: 8px;
+      padding: 3px 10px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-text {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.75;
+    }
+
+    /* 区切り線 */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 32px 0;
+    }
+
+    /* フッター */
+    .footer {
+      text-align: center;
+      padding: 32px 16px 16px;
+    }
+    .footer p {
+      font-size: 11px;
+      color: var(--text-dim);
+      opacity: 0.5;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ヘッダー -->
+  <div class="site-header">
+    <div class="eyebrow">POKEMON SLEEP TOOLS</div>
+    <h1>チーム食材<span>シミュレーター</span><br>ツールガイド</h1>
+    <p class="hero-sub">
+      食材ポケモンの厳選判断を定量化する。<br>
+      チーム編成・目標料理・手持ちポケモンを入力して、<br>
+      週21食を作り続けられるかシミュレートします。
+    </p>
+    <div class="nav-btn-group">
+      <a href="index.html" class="nav-btn nav-btn-primary">🍳 シミュレーターを開く</a>
+      <a href="https://www.tofumentalpapa.com" class="nav-btn nav-btn-secondary">📖 ブログへ</a>
+    </div>
+  </div>
+
+  <!-- ① 開発背景 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">BACKGROUND</span>
+      <h2 class="section-title">① 開発背景および目的</h2>
+    </div>
+
+    <div class="panel">
+      <p>
+        これまで食材ポケモンの厳選基準は「AAA食材確率M」と言われてきました。
+        しかし、現在のポケモンスリープ環境ではこの基準だけでは不十分になっています。
+      </p>
+
+      <div class="highlight-box" style="margin-top:14px;">
+        <div class="hl-title">⚠️ 従来基準が通じなくなった理由</div>
+        <ul>
+          <li>目標とする料理がどんどん大型化している</li>
+          <li>無課金／プレパス勢／微課金勢でプレイスタイルが大きく異なる</li>
+          <li>食材タイプを何体編成するかで必要量が変わる</li>
+          <li>レベル70サブスキル解放という環境変化</li>
+        </ul>
+      </div>
+
+      <p style="margin-top:14px;">
+        こうした要素によって、プレイヤーごとに必要な食材量や厳選ラインが
+        大きく変わるようになりました。にもかかわらず、これらを
+        「定量的に判断できるツール」が存在していませんでした。
+      </p>
+      <p>
+        そこで今回、チームに何体食材タイプを入れるか、目標料理、
+        自分の手持ちポケモンのサブスキルなどを入力することで、
+        「料理を1週間作り続けられるか」を評価できるツールを作成しました。
+      </p>
+    </div>
+
+    <div class="screenshot-wrap">
+      <img src="IMG_0503.PNG" alt="ツール結果画面">
+      <div class="screenshot-caption">▲ 結果画面：充足状況・必要日数・ポケモン別獲得量を一括表示</div>
+    </div>
+
+    <div class="panel">
+      <div class="highlight-box green">
+        <div class="hl-title">✅ こんな場面で役立ちます</div>
+        <ul>
+          <li>4種類の食材が必要な料理で、3種類が厳選済みの場合<br>
+            <span style="font-size:12px;color:var(--text-dim);">→ 最後の1体はどのサブスキルならクリアできるかを調べる</span>
+          </li>
+          <li>余剰食材を見て、他に作れる料理がないか逆算する</li>
+          <li>レベル70サブスキルを解放した場合、どれだけ改善するかを確認する</li>
+        </ul>
+      </div>
+      <p style="margin-top:14px;">
+        皆さんのポケスリライフがより有意義なものになることを願っています。
+      </p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ② 使用方法 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">HOW TO USE</span>
+      <h2 class="section-title">② 使用方法</h2>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="panel">
+      <div class="step-item" style="margin-bottom:14px;">
+        <span class="step-badge">STEP 1</span>
+        <span class="step-text" style="font-size:15px;font-weight:800;color:var(--text);">チーム編成の設定</span>
+      </div>
+      <p>きのみ、食材、スキルタイプを何体編成するかを入力します。</p>
+
+      <div class="screenshot-wrap" style="margin:14px 0;">
+        <img src="IMG_0514.PNG" alt="チーム編成画面">
+        <div class="screenshot-caption">▲ 編成画面：0.5刻みで細かく設定可能</div>
+      </div>
+
+      <div class="example-box">
+        <div class="ex-label">💡 入力例</div>
+        <p>
+          ボーマンダとサーナイトは常時編成。食材タイプは常時2体。
+          デデンネが2回スキル発動したら食材にチェンジする場合は、<br>
+          <strong style="color:var(--star);">きのみ1、食材2.5、スキル1.5</strong> と入力します。
+        </p>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="panel">
+      <div class="step-item" style="margin-bottom:14px;">
+        <span class="step-badge">STEP 2</span>
+        <span class="step-text" style="font-size:15px;font-weight:800;color:var(--text);">ポケモンのサブスキル設定</span>
+      </div>
+      <p>使用するポケモン名を選択し、レベル・サブスキル・性格・食材配列を登録します。</p>
+
+      <div class="screenshot-wrap" style="margin:14px 0;">
+        <img src="IMG_0499.PNG" alt="ポケモン設定画面">
+        <div class="screenshot-caption">▲ ポケモン設定：性格・サブスキルを詳細に登録</div>
+      </div>
+
+      <div class="highlight-box">
+        <div class="hl-title">📌 計算の前提</div>
+        <ul>
+          <li>きのみ・スキルタイプは登録ポケモンを7日間使用し続ける前提で計算</li>
+          <li>50%稼働表記のポケモンは3.5日間で計算</li>
+          <li>これらのポケモンが回収する食材が目標料理に含まれる場合は「使用する前提」でシミュレート</li>
+          <li>食材タイプのポケモンは枠内で交換しながら必要な食材を収集</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="panel">
+      <div class="step-item" style="margin-bottom:14px;">
+        <span class="step-badge">STEP 3</span>
+        <span class="step-text" style="font-size:15px;font-weight:800;color:var(--text);">目標料理の設定</span>
+      </div>
+      <p>目標料理を登録してください。複数料理を設定可能ですが、<strong style="color:var(--star);">合計21食</strong>になるように設定してください。</p>
+
+      <div class="screenshot-wrap" style="margin:14px 0;">
+        <img src="IMG_0492.PNG" alt="料理登録画面">
+        <div class="screenshot-caption">▲ 料理登録：ジャンル→料理名の2段階で選択</div>
+      </div>
+
+      <p>週末に食材を持ち越した状態でシミュレーションすることもできます。持ち越す食材がある場合は、週頭在庫欄に登録してください。</p>
+
+      <div class="screenshot-wrap" style="margin:14px 0;">
+        <img src="IMG_0501.png" alt="在庫入力画面">
+        <div class="screenshot-caption">▲ 週頭在庫：前週の持ち越し食材を加味して計算</div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="panel">
+      <div class="step-item" style="margin-bottom:14px;">
+        <span class="step-badge">STEP 4</span>
+        <span class="step-text" style="font-size:15px;font-weight:800;color:var(--text);">結果の確認</span>
+      </div>
+      <p>計算結果が出力されます。</p>
+
+      <div class="screenshot-wrap" style="margin:14px 0;">
+        <img src="IMG_0502.png" alt="結果画面1">
+        <div class="screenshot-caption">▲ 充足判定・必要日数・不足食材を一覧表示</div>
+      </div>
+
+      <div class="step-list">
+        <div class="step-item">
+          <span class="step-badge">判定</span>
+          <span class="step-text">登録ポケモンだけで食材を集め切れるか判定。集め切れる場合は「何日くらい余力があるか」、不足している場合は「いくつ不足しているか」「あと何日あれば集められるか」を表示</span>
+        </div>
+        <div class="step-item">
+          <span class="step-badge">能力値</span>
+          <span class="step-text">登録ポケモンを1日フルで使用した場合、食材を何個回収できるかを表示</span>
+        </div>
+        <div class="step-item">
+          <span class="step-badge">余剰</span>
+          <span class="step-text">料理に使用しない余剰食材を集計して表示</span>
+        </div>
+      </div>
+
+      <div class="screenshot-wrap" style="margin:14px 0;">
+        <img src="IMG_7106.PNG" alt="結果画面2">
+        <div class="screenshot-caption">▲ ポケモン別獲得量と余剰食材の詳細</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 下部ナビ -->
+  <div style="text-align:center;padding:24px 0 8px;">
+    <div class="nav-btn-group">
+      <a href="index.html" class="nav-btn nav-btn-primary">🍳 シミュレーターを開く</a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>トフメンタルパパのポケモンスリープ攻略ツール</p>
+  </div>
+
+</div>
+</body>
+</html>
