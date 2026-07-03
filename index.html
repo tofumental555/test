@@ -1129,58 +1129,47 @@ function calcWeekly(entry, teamOtebonus = 0) {
   const berryPerHelp = (pokemon.category === "きのみ" ? 2 : 1) + berryNumS;
 
   // ── 所持数あふれ計算 ──
-  // 【計算式】
-  // 1回お手伝いの平均獲得数 = きのみ個数×(1-fr) + 食材個数/回×fr
-  // 満タンまでのお手伝い回数 = maxInventory ÷ 平均獲得数
-  // 食材獲得量 = 食材個数/回 × fr × 満タンまでの回数
+  // 【正しい計算式（ユキさん方式）】
+  // avgPerHelp = きのみ個数×(1-fr) + 食材平均個数×fr
+  // helpsUntilFull = maxInventory ÷ avgPerHelp  → 満タンまでのお手伝い回数
   //
-  // タップ設定による：
-  //   毎分タップON  → 1日全体(hpd回)をそのまま計算（あふれなし）
-  //   毎分タップOFF → 起床中(15.5h)はあふれなし + 睡眠中(8.5h)はあふれ考慮
+  // 起床中（15.5h）：毎分タップ前提 → 常にあふれなし
+  //   食材獲得 = awakeHelps × fr × 食材個数/回
+  //
+  // 睡眠中（8.5h）：
+  //   sleepTap=ON  → あふれなし（通常計算）
+  //   sleepTap=OFF → helpsUntilFull回まで食材獲得、それ以降はきのみのみ
+  //   睡眠中食材獲得 = min(sleepHelps, helpsUntilFull) × fr × 食材個数/回
 
   const AWAKE_SECONDS = 15.5 * 3600;
   const SLEEP_SECONDS = 8.5 * 3600;
-  const DAY_SECONDS   = 86400;
 
   // 1回あたりの平均蓄積個数（きのみ+食材合算）
   const avgPerHelp = (1 - fr) * berryPerHelp + fr * avgIngPerHelp;
 
-  // 食材獲得量の補正係数（あふれなし=1.0）
-  let effectiveFoodMultiplier = 1.0;
-
-  // デバッグ: maxInventoryの確認
-  console.log("[overflow]", pokemon.name, "maxInv:", pokemon.maxInventory, "sleepTap:", sleepTap, "avgPerHelp:", avgPerHelp?.toFixed(3), "eff:", effectiveFoodMultiplier?.toFixed(3));
-  if (!sleepTap && maxInventory != null && maxInventory > 0 && avgPerHelp > 0) {
-    // 起床中（15.5h）: 毎分タップ → あふれなし
-    const awakeHelps = AWAKE_SECONDS / interval;
-
-    // 睡眠中（8.5h）: あふれ考慮
-    const sleepHelps = SLEEP_SECONDS / interval;
-
-    // 満タンまでの回数
-    const helpsUntilFull = maxInventory / avgPerHelp;
-
-    // 睡眠中に満タンに達するか？
-    if (sleepHelps <= helpsUntilFull) {
-      // 睡眠中もあふれなし → ロスなし
-      effectiveFoodMultiplier = 1.0;
-    } else {
-      // 睡眠中に満タン到達 → 残りは食材ロス
-      // 睡眠中の有効食材回数 = helpsUntilFull × fr
-      // 本来の食材回数 = sleepHelps × fr
-      const totalHelps     = awakeHelps + sleepHelps;
-      const effectiveHelps = awakeHelps + helpsUntilFull; // 起床フル + 睡眠は満タンまで
-      effectiveFoodMultiplier = effectiveHelps / totalHelps;
-    }
-  }
-
   const result = {};
   for (const slot of slots) {
     const { ing, cnt } = slotIngMap[slot];
-    if (ing && cnt > 0) {
-      const k = normIng(ing);
-      // 週間獲得量 = hpw × fr × 個数 × sp × あふれ補正
-      result[k] = (result[k] ?? 0) + hpw * fr * cnt * sp * effectiveFoodMultiplier;
+    if (!ing || cnt <= 0) continue;
+    const k = normIng(ing);
+
+    if (!sleepTap && maxInventory != null && maxInventory > 0 && avgPerHelp > 0) {
+      // あふれ考慮モード
+      const awakeHelps     = AWAKE_SECONDS / interval;  // 起床中お手伝い回数/日
+      const sleepHelps     = SLEEP_SECONDS / interval;  // 睡眠中お手伝い回数/日
+      const helpsUntilFull = maxInventory / avgPerHelp; // 満タンまでの回数
+
+      // 睡眠中に有効なお手伝い回数（満タンになったら以降は食材取れない）
+      const effectiveSleepHelps = Math.min(sleepHelps, helpsUntilFull);
+
+      // 1日の食材獲得量
+      const dailyIng = (awakeHelps + effectiveSleepHelps) * fr * cnt * sp;
+
+      // 週間獲得量
+      result[k] = (result[k] ?? 0) + dailyIng * 7;
+    } else {
+      // あふれなしモード（通常計算）
+      result[k] = (result[k] ?? 0) + hpw * fr * cnt * sp;
     }
   }
   return result;
@@ -1522,12 +1511,26 @@ function renderResult(have, need, surplus, perPokemon, allOk, minRatio, surplusD
     ? surplusEntries.map(([k,v])=>`・${k}：${v.toFixed(1)}個/週`).join("<br>")
     : "なし";
 
+  // デバッグ情報を収集
+  const debugLines = perPokemon.map(p => {
+    const e = pokemonSlots.find(s => {
+      const en = getEntry(s.prefix);
+      return en && en.pokemon.name === p.name;
+    });
+    const entry = e ? getEntry(e.prefix) : null;
+    const maxInv = entry ? (entry.pokemon.maxInventory ?? "未登録") : "?";
+    return `${p.name}: maxInv=${maxInv}`;
+  }).join(", ");
+
   document.getElementById("resultContent").innerHTML = `
     <div class="pks-verdict">
       <div class="pks-verdict-main ${allOk?"ok":"ng"}">${allOk?"✅ 21食分 準備OK！":"❌ 食材が不足しています"}</div>
       <div class="pks-verdict-sub">1週間（7日）・21食分シミュレーション結果</div>
       ${teamOtebonus > 0 ? `<div style="font-size:11px;color:var(--pks-green);margin-top:4px;">🤝 チームおてぼボーナス +${Math.round(teamOtebonus*100)}%（編成中のおてぼ持ち分・上限35%）</div>` : ""}
       ${Object.keys(stockMap).length > 0 ? `<div style="font-size:11px;color:var(--pks-text-dim);margin-top:4px;">週頭在庫込み</div>` : ""}
+      <div style="margin-top:8px;padding:8px 12px;background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.2);border-radius:8px;font-size:10.5px;color:var(--pks-text-dim);text-align:left;">
+        🔍 デバッグ: sleepTap=${sleepTap} / ${debugLines}
+      </div>
     </div>
     ${needKeys.length?`<div class="pks-result-section-title">食材ごとの充足状況（週間）</div><div class="pks-ing-grid">${ingHtml}</div>`:""}
     ${detailHtml}
