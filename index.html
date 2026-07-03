@@ -633,7 +633,7 @@ function toggleSleepTap() {
 let pokemonSlots = [];
 
 /* ===== DB読み込み ===== */
-const POKEMON_JSON_URL = "https://tofumental555.github.io/ingredient-simulator/pokemon_data.json";
+const POKEMON_JSON_URL = "https://tofumental555.github.io/test/pokemon_data.json";
 
 async function loadDB() {
   try {
@@ -1511,26 +1511,12 @@ function renderResult(have, need, surplus, perPokemon, allOk, minRatio, surplusD
     ? surplusEntries.map(([k,v])=>`・${k}：${v.toFixed(1)}個/週`).join("<br>")
     : "なし";
 
-  // デバッグ情報を収集
-  const debugLines = perPokemon.map(p => {
-    const e = pokemonSlots.find(s => {
-      const en = getEntry(s.prefix);
-      return en && en.pokemon.name === p.name;
-    });
-    const entry = e ? getEntry(e.prefix) : null;
-    const maxInv = entry ? (entry.pokemon.maxInventory ?? "未登録") : "?";
-    return `${p.name}: maxInv=${maxInv}`;
-  }).join(", ");
-
   document.getElementById("resultContent").innerHTML = `
     <div class="pks-verdict">
       <div class="pks-verdict-main ${allOk?"ok":"ng"}">${allOk?"✅ 21食分 準備OK！":"❌ 食材が不足しています"}</div>
       <div class="pks-verdict-sub">1週間（7日）・21食分シミュレーション結果</div>
       ${teamOtebonus > 0 ? `<div style="font-size:11px;color:var(--pks-green);margin-top:4px;">🤝 チームおてぼボーナス +${Math.round(teamOtebonus*100)}%（編成中のおてぼ持ち分・上限35%）</div>` : ""}
       ${Object.keys(stockMap).length > 0 ? `<div style="font-size:11px;color:var(--pks-text-dim);margin-top:4px;">週頭在庫込み</div>` : ""}
-      <div style="margin-top:8px;padding:8px 12px;background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.2);border-radius:8px;font-size:10.5px;color:var(--pks-text-dim);text-align:left;">
-        🔍 デバッグ: sleepTap=${sleepTap} / ${debugLines}
-      </div>
     </div>
     ${needKeys.length?`<div class="pks-result-section-title">食材ごとの充足状況（週間）</div><div class="pks-ing-grid">${ingHtml}</div>`:""}
     ${detailHtml}
