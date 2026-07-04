@@ -217,7 +217,13 @@
     "3a": 4,
     "3b": 6,
     "3c": 7,
-    "maxInventory": 22
+    "maxInventory": 22,
+    "skillIngCount": 18,
+    "skillIngredients": [
+      "ずっしりカボチャ",
+      "ワカクサコーン",
+      "ほっこりポテト"
+    ]
   },
   {
     "name": "ピクシー",
@@ -1317,7 +1323,14 @@
     "3a": 7,
     "3b": 6,
     "3c": 8,
-    "maxInventory": 17
+    "maxInventory": 17,
+    "skillIngCount": 21,
+    "skillIngredients": [
+      "ワカクサコーン",
+      "あんみんトマト",
+      "ピュアなオイル",
+      "ほっこりポテト"
+    ]
   },
   {
     "name": "ボスゴドラ",
@@ -1617,7 +1630,14 @@
     "3a": 4,
     "3b": 6,
     "3c": 4,
-    "maxInventory": 23
+    "maxInventory": 23,
+    "skillIngCount": 15.48,
+    "skillIngredients": [
+      "マメミート",
+      "あじわいキノコ",
+      "ワカクサ大豆",
+      "めざましコーヒー"
+    ]
   },
   {
     "name": "ミカルゲ",
@@ -1877,7 +1897,13 @@
     "3a": 4,
     "3b": 5,
     "3c": 5,
-    "maxInventory": 22
+    "maxInventory": 22,
+    "skillIngCount": 18,
+    "skillIngredients": [
+      "つやつやアボカド",
+      "ほっこりポテト",
+      "ピュアなオイル"
+    ]
   },
   {
     "name": "ウォーグル",
@@ -2097,7 +2123,13 @@
     "3a": 7,
     "3b": 6,
     "3c": 5,
-    "maxInventory": 24
+    "maxInventory": 24,
+    "skillIngCount": 18,
+    "skillIngredients": [
+      "あまいミツ",
+      "ワカクサコーン",
+      "ピュアなオイル"
+    ]
   },
   {
     "name": "キテルグマ",
